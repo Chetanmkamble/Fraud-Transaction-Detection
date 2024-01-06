@@ -1,0 +1,36 @@
+#import necessary luibrary
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import IsolationForest
+from sklearn.metrics import classification_report, accuracy_score
+df=pd.read_csv("creditcard.csv") #load the data
+print(df.head())
+
+X = df.drop('Class', axis=1)    # Split the dataset into features (X) and labels (y)
+y = df['Class']
+# set the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+
+model = IsolationForest(contamination=0.01, random_state=42)    # Create an Isolation Forest model
+
+model.fit(X_train)  # Train the model
+
+y_pred = model.predict(X_test)  # Prediction on the test set
+
+
+y_pred[y_pred == 1] = 0     # Convert predictions to 0 for normal transactions and 1 for fraudulent transactions
+y_pred[y_pred == -1] = 1
+
+fraudulent_transactions = df[df['Class'] == 1]
+
+if len(fraudulent_transactions) > 0:
+    print("Fraudulent transactions found!")
+    print(fraudulent_transactions)
+else:
+    print("No fraudulent transactions found.")
+
+# Evaluate the model
+print("Accuracy Score:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))
